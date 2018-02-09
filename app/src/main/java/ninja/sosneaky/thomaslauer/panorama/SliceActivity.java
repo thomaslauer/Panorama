@@ -15,7 +15,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.io.File;
@@ -35,6 +37,9 @@ public class SliceActivity extends AppCompatActivity {
 
     private Bitmap mFullBitmap;
     private ArrayList<Bitmap> mSegmentedBitmap;
+
+    private ProgressBar sliceProgress;
+    private Button sliceButton;
 
     Thread workerThread;
 
@@ -61,6 +66,9 @@ public class SliceActivity extends AppCompatActivity {
         ImageView view = (ImageView) findViewById(imageView);
         view.setImageURI(imageUri);
 
+        sliceProgress = (ProgressBar) findViewById(R.id.progressBar);
+        sliceButton = (Button) findViewById(R.id.button_slice);
+
         try {
             mFullBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
         } catch (IOException e) {
@@ -76,6 +84,7 @@ public class SliceActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
         Toast.makeText(this, "Processing...", Toast.LENGTH_SHORT).show();
+        sliceButton.setEnabled(false);
         workerThread = new Thread(new PanoramaTask(this));
         workerThread.run();
     }
@@ -109,29 +118,31 @@ public class SliceActivity extends AppCompatActivity {
             } else {
 
                 int numberOfSquares = width / height;
+                sliceProgress.setMax(numberOfSquares);
                 //int extraWidth = (width - numberOfSquares * height);
 
                 int segmentSize = height; // maybe change how this is done
 
-                int currentSegment = 0;
-                while(currentSegment < numberOfSquares) {
+                for(int currentSegment = 0; currentSegment < numberOfSquares; currentSegment++) {
 
                     Log.d(LOG, "Segmenting part " + currentSegment + "/" + numberOfSquares);
 
                     int offset = (width % height) / 2;
 
-                    Bitmap currentBitmapSegment = Bitmap.createBitmap(mFullBitmap, currentSegment * segmentSize + offset, 0,
+                    Bitmap currentBitmapSegment = Bitmap.createBitmap(mFullBitmap,
+                            currentSegment * segmentSize + offset, 0,
                             segmentSize, segmentSize);
 
                     mSegmentedBitmap.add(currentBitmapSegment);
-
-                    currentSegment++;
+                    sliceProgress.setProgress(currentSegment);
                 }
 
                 saveAllImages();
 
                 makeToast("Finished Processing!");
             }
+
+            sliceButton.setEnabled(true);
         }
 
         public void makeToast(final String text) {
