@@ -45,6 +45,7 @@ public class SliceActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Init the view
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_slice);
 
