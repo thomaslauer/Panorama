@@ -119,14 +119,15 @@ public class SliceActivity extends AppCompatActivity {
             } else {
 
                 int numberOfSquares = width / height;
-                sliceProgress.setMax(numberOfSquares);
+                sliceProgress.setMax(numberOfSquares - 1);
                 //int extraWidth = (width - numberOfSquares * height);
 
                 int segmentSize = height; // maybe change how this is done
 
                 for(int currentSegment = 0; currentSegment < numberOfSquares; currentSegment++) {
 
-                    Log.d(LOG, "Segmenting part " + currentSegment + "/" + numberOfSquares);
+                    Log.d(LOG, "Segmenting part " + (currentSegment+1) + "/" + numberOfSquares);
+                    setProgressBar(currentSegment);
 
                     int offset = (width % height) / 2;
 
@@ -135,14 +136,14 @@ public class SliceActivity extends AppCompatActivity {
                             segmentSize, segmentSize);
 
                     mSegmentedBitmap.add(currentBitmapSegment);
-                    sliceProgress.setProgress(currentSegment);
+
                 }
 
                 saveAllImages();
 
                 makeToast("Finished Processing!");
             }
-
+            sliceProgress.setProgress(0);
             sliceButton.setEnabled(true);
         }
 
@@ -150,6 +151,15 @@ public class SliceActivity extends AppCompatActivity {
             activity.runOnUiThread(new Runnable() {
                 public void run() {
                     Toast.makeText(activity, text, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        private void setProgressBar(final int progress) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    sliceProgress.setProgress(progress);
                 }
             });
         }
